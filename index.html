@@ -56,18 +56,18 @@
             z-index: 100;
         }
 
-        .logo-mock {
-            color: white;
-            font-size: 28px;
-            font-weight: 700;
-            letter-spacing: -1px;
+        /* Logo de e-ticket en el Header */
+        .header-logo-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
             margin-bottom: 12px;
         }
-        .logo-mock span {
-            font-weight: 300;
-            border-left: 2px solid white;
-            padding-left: 5px;
-            margin-left: 2px;
+
+        .header-logo-img {
+            height: 45px;
+            width: auto;
+            object-fit: contain;
         }
 
         .search-box {
@@ -141,8 +141,16 @@
         .view-section.active { display: block; }
 
         /* Login */
-        .login-banner-img {
+        .login-banner-container {
             width: 100%;
+            background-color: #ffffff;
+            padding: 15px 0;
+            display: flex;
+            justify-content: center;
+        }
+        .login-banner-img {
+            width: 85%;
+            max-width: 320px;
             height: auto;
             display: block;
         }
@@ -158,10 +166,25 @@
 
         .sub-header-title { background-color: var(--eticket-gray-bg); color: white; padding: 10px; font-size: 14px; font-weight: 700; text-align: center; text-transform: uppercase; }
 
-        /* Estilos basados exactamente en el formato de la imagen suministrada */
+        /* Estilos de información basados en la imagen suministrada */
         .purchase-info-container {
             padding: 20px 15px;
             background-color: #ffffff;
+        }
+
+        /* Contenedor para el Banner del Evento en Mis Eventos */
+        .event-banner-wrapper {
+            width: 100%;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .event-banner-img {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+            border-radius: 4px;
         }
 
         .main-event-title {
@@ -374,7 +397,10 @@
     <div class="app-container">
         
         <header class="app-header">
-            <div class="logo-mock">e<span>ticket</span></div>
+            <!-- Imagen de e-ticket en el menú superior -->
+            <div class="header-logo-container">
+                <img class="header-logo-img" src="logo_eticket.jpeg" alt="e-ticket">
+            </div>
             <div class="search-box">
                 <input type="text" placeholder="Buscar artistas y/o eventos...">
                 <button>Buscar</button>
@@ -390,9 +416,11 @@
             </div>
         </header>
 
-        <!-- PANTALLA 1: LOGIN -->
+        <!-- PANTALLA 1: LOGIN (Con logo_eticket.jpeg incorporado) -->
         <div id="view-login" class="view-section active">
-            <img class="login-banner-img" src="logo_eticket.jpeg" alt="eticket Banner">
+            <div class="login-banner-container">
+                <img class="login-banner-img" src="logo_eticket.jpeg" alt="eticket Banner">
+            </div>
             <div class="login-container">
                 <div class="login-title">Acceso a Mi Cuenta eticket</div>
                 <div class="login-subtitle">Introduce tu cuenta para visualizar tus accesos directos.</div>
@@ -408,11 +436,16 @@
             </div>
         </div>
 
-        <!-- PANTALLA 2: MIS EVENTOS (ESTILO REPLICA DE LA IMAGEN Suministrada) -->
+        <!-- PANTALLA 2: MIS EVENTOS (Con logo_baner.jpg encima del texto de los boletos) -->
         <div id="view-tickets-list" class="view-section">
             <div class="sub-header-title">Mis Eventos</div>
             
             <div class="purchase-info-container">
+                <!-- Imagen del banner colocada exactamente arriba del texto de los boletos -->
+                <div class="event-banner-wrapper">
+                    <img class="event-banner-img" src="logo_baner.jpg" alt="Banner Evento Álvaro Díaz">
+                </div>
+
                 <div class="main-event-title">OMAKASE - ÁLVARO DÍAZ</div>
                 <div class="main-event-venue">Foro GNP Seguros, Mérida</div>
                 <div class="main-event-date">SÁBADO, 19 DE SEPTIEMBRE DE 2026 21:00 HRS</div>
@@ -426,7 +459,7 @@
                 <span style="font-size: 13px; color: #555;">Cuentas con boletos electrónicos para este evento.</span>
             </div>
 
-            <!-- Bloques de visualización gemelos a la captura -->
+            <!-- Bloques de boletos -->
             <div class="image-tickets-grid">
                 <!-- BOLETO 1 -->
                 <div class="image-ticket-card">
@@ -438,7 +471,6 @@
                     <div class="image-card-body">
                         <p>Este boleto fue transferido a <strong>Sofía Castro</strong>.</p>
                     </div>
-                    <!-- El botón amarillo ejecuta la redirección directa a su wallet link -->
                     <button class="image-card-wallet-btn" onclick="redirectToWallet('1')">
                         📥 Este boleto se encuentra en tu wallet
                     </button>
@@ -461,7 +493,7 @@
             </div>
         </div>
 
-        <!-- PANTALLA 3: DETALLE CON QR (Se preserva igual por si se navega internamente) -->
+        <!-- PANTALLA 3: DETALLE CON QR -->
         <div id="view-ticket-detail" class="view-section">
             <div class="ticket-detail-container">
                 <div class="back-nav" onclick="changeView('view-tickets-list')">← Volver a mis entradas</div>
@@ -528,7 +560,6 @@
         let detectedUsername = "";
         let qrInstance = null;
 
-        // Tus dos nuevos enlaces correspondientes asignados a cada boleto
         const walletLinks = {
             "1": "https://pay.google.com/gp/v/save/eyJhbGciOiJSUzI1NiIsImtpZCI6IjI2ZDRhOTVhZTk1MDNmZTY0MThmZWJhY2E5OGI2YmQxZTU1NjhmOTMiLCJ0eXAiOiJKV1QifQ.eyJhdWQiOiJnb29nbGUiLCJpYXQiOjE3ODE0ODI4MjAsImlzcyI6IndhbGxldC1wYXNzZXMtc2hhcmluZ0BzeXN0ZW0uZ3NlcnZpY2VhY2NvdW50LmNvbSIsInR5cCI6InNhdmV0b2dvb2dsZXBheSIsInBheWxvYWQiOnsiZXZlbnRUaWNrZXRPYmplY3RzIjpbeyJjbGFzc0lkIjoiMzM1MzEwNjU0ODcwNzczNzQ0MS55MjJiODZkZTU2MjUzZWVlNzc3YWQzMTg3ZGEwN2Y1MTY4YmQ4MDVleW0zMmNlZGdscGNxMDZ1ejE4b3oiLCJpZCI6IjMzNTMxMDY1NDg3MDc3Mzc0NDEuM2EyZmY0YzQyNTA4MjJiZTk5ZWFkMTY3NzQ0ZjM5NWJkNzMzNzdhZWwxcHk5NnU5d3IybXp5d2RmaGozIn1dfX0.QN1QNz1gVwH4iyMsicGALOywRwu2CBlxfrXSlHe3YDT006oTA85NKV3W3SFzMmZ-curt3pUUr_kihui-OaUmmxXp5YgciqNyosN6saZzuZ3J9qCh45E5TCU954HJjPOS-xBPlO5wi9PQInt5NPHPM5U5vwvBv8iiAhRv2ytcJItfWPx_sM2O2lGqpHzP0Y8_dqazwveFEP57Ijz3x57N1Q5m_AjllaJv0Slf4kIqsq770zYvSxzKOZ8SlYzkCy_xrzdha8uVhYTh_69etxn7tdrO5Ava1SiRxP4pI9y6yOGWSIikq59n-j8CKdj-U4sUjlYg6cr9ErCcz89Pd89gCw",
             "2": "https://pay.google.com/gp/v/save/eyJhbGciOiJSUzI1NiIsImtpZCI6IjI2ZDRhOTVhZTk1MDNmZTY0MThmZWJhY2E5OGI2YmQxZTU1NjhmOTMiLCJ0eXAiOiJKV1QifQ.eyJhdWQiOiJnb29nbGUiLCJpYXQiOjE3ODE0ODI2MTgsImlzcyI6IndhbGxldC1wYXNzZXMtc2hhcmluZ0BzeXN0ZW0uZ3NlcnZpY2VhY2NvdW50LmNvbSIsInR5cCI6InNhdmV0b2dvb2dsZXBheSIsInBheWxvYWQiOnsiZXZlbnRUaWNrZXRPYmplY3RzIjpbeyJjbGFzc0lkIjoiMzM1MzEwNjU0ODcwNzczNzQ0MS55MjJiODZkZTU2MjUzZWVlNzc3YWQzMTg3ZGEwN2Y1MTY4YmQ4MDVlZHZ3MzZ4dGFnYjI5azNhdTF5MXMiLCJpZCI6IjMzNTMxMDY1NDg3MDc3Mzc0NDEuNjZmMGVmZTg1ZTJhYzEzNjAzZGVlYzIwNTU0M2I4NjMyNDI3Y2I4M2R4OWRkeW5iaWNhZTZkZzk5cm5jIn1dfX0.um6VPnhZN0CGxvsDLqkPiAofT3HJan3PVUgeSC_j1Mhdtby_UUhiIxd66NIcKtmshrsAqTbgNMly81mmHDM933BVUURowDE-RAXZzAb6DUQxrtAeRq17V156qVSRjbvRG3oIKpB0i3o8BUn_h0eQBiiW5XTZnI7ar9gwe2arCWRbo8yOnYak7AGpEW5qqhd0vg-5HwhvHpKvNTvDZ9Ozzz249OxFJpDcSngB1BzI0djOg9b7nmFG66SKZcaVK2k2owJzm5ESCwl03pEjvkwuJKHyY1DFvSPD7DRHSKfcuMokrTvijg_NNsEBLRO3epj0sh305cXIn3xgC2bLff4s1w23"
@@ -557,7 +588,6 @@
             changeView('view-tickets-list');
         }
 
-        // Función ejecutada por la barra amarilla para abrir el link correspondiente de Wallet
         function redirectToWallet(id) {
             if(walletLinks[id]) {
                 window.open(walletLinks[id], '_blank');
