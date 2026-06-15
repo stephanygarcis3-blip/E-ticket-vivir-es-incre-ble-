@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimum-scale=1.0">
+    <title>eticket México - Acceso Seguro</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        :root {
+            --eticket-blue: #002f6c;
+            --eticket-light-blue: #0f69c4;
+            --eticket-bg: #ffffff;
+            --eticket-dark: #111111;
+            --eticket-gray-bg: #001c42;
+            --text-muted: #666666;
+            --btn-yellow: #f4d03f;
+            --ticket-blue-bg: #c2d4f8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            background-color: #f0f2f5;
+            color: var(--eticket-dark);
+            display: flex;
+            justify-content: center;
+            overflow-x: hidden;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 480px;
+            background: var(--eticket-bg);
+            min-height: 100vh;
+            box-shadow: 0 0 20px rgba(0,0,0,0.15);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Encabezado */
+        .app-header {
+            background-color: var(--eticket-blue);
+            padding: 15px 10px;
+            text-align: center;
+            position: relative;
+            z-index: 100;
+        }
+
+        .logo-mock {
+            color: white;
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -1px;
+            margin-bottom: 12px;
+        }
+        .logo-mock span {
+            font-weight: 300;
+            border-left: 2px solid white;
+            padding-left: 5px;
+            margin-left: 2px;
+        }
+
+        .search-box {
+            display: flex;
+            width: 92%;
+            margin: 0 auto 12px auto;
+        }
+
+        .search-box input {
+            flex: 1;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px 0 0 4px;
+            font-size: 13px;
+            outline: none;
+        }
+
+        .search-box button {
+            background-color: var(--eticket-light-blue);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 0 4px 4px 0;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        .user-nav-btn {
+            background-color: var(--eticket-light-blue);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 92%;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 4%;
+            width: 92%;
+            background: white;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+            z-index: 200;
+            border-radius: 0 0 4px 4px;
+        }
+
+        .dropdown-menu.show { display: block; }
+
+        .dropdown-item {
+            padding: 14px 20px;
+            color: #333;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .view-section { display: none; }
+        .view-section.active { display: block; }
+
+        /* Login */
+        .login-banner-img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        .login-container { padding: 20px; }
+        .login-title { color: var(--eticket-blue); font-size: 20px; font-weight: 700; margin-bottom: 8px; text-align: center; }
+        .login-subtitle { font-size: 13px; color: var(--text-muted); text-align: center; margin-bottom: 25px; }
+        .form-group { margin-bottom: 16px; text-align: left; }
+        .form-group label { display: block; font-size: 12px; font-weight: 700; color: var(--eticket-blue); margin-bottom: 6px; text-transform: uppercase; }
+        .form-group input { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 14px; outline: none; }
+        
+        .btn-primary { background-color: var(--eticket-light-blue); color: white; border: none; padding: 12px; width: 100%; border-radius: 4px; font-weight: bold; font-size: 14px; cursor: pointer; transition: background 0.2s; }
+        .btn-primary:hover { background-color: var(--eticket-blue); }
+
+        .sub-header-title { background-color: var(--eticket-gray-bg); color: white; padding: 10px; font-size: 14px; font-weight: 700; text-align: center; text-transform: uppercase; }
+
+        /* Estilos basados exactamente en el formato de la imagen suministrada */
+        .purchase-info-container {
+            padding: 20px 15px;
+            background-color: #ffffff;
+        }
+
+        .main-event-title {
+            font-size: 22px;
+            font-weight: 800;
+            color: #111111;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .main-event-venue {
+            font-size: 14px;
+            color: #444444;
+            margin-bottom: 4px;
+        }
+
+        .main-event-date {
+            font-size: 14px;
+            font-weight: 700;
+            color: #111111;
+            margin-bottom: 20px;
+        }
+
+        .section-header-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #222222;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 4px;
+        }
+
+        .meta-data-row {
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #333333;
+        }
+
+        .meta-data-row strong {
+            color: #000000;
+            display: inline-block;
+            width: 140px;
+        }
+
+        /* Cuadrícula de Boletos réplica exacta */
+        .image-tickets-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            padding: 10px 15px 30px 15px;
+            background: #ffffff;
+        }
+
+        .image-ticket-card {
+            background: #ffffff;
+            border-radius: 6px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border: 1px solid #cbd5e1;
+        }
+
+        .image-card-top {
+            background-color: var(--ticket-blue-bg);
+            padding: 12px 8px;
+            text-align: center;
+        }
+
+        .image-card-zone {
+            font-size: 12px;
+            font-weight: 700;
+            color: #333c4d;
+            text-transform: uppercase;
+        }
+
+        .image-card-section {
+            font-size: 13px;
+            font-weight: 600;
+            color: #333c4d;
+            margin: 2px 0;
+        }
+
+        .image-card-seat {
+            font-size: 16px;
+            font-weight: 800;
+            color: #111111;
+        }
+
+        .image-card-body {
+            padding: 15px 8px;
+            text-align: center;
+            font-size: 12px;
+            color: #444444;
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f8fafc;
+            border-bottom: 1px dashed #cbd5e1;
+        }
+
+        .image-card-body p {
+            line-height: 1.4;
+        }
+
+        .image-card-body strong {
+            color: #000000;
+            font-weight: 700;
+        }
+
+        /* Franja amarilla inferior - Botón para abrir Wallet */
+        .image-card-wallet-btn {
+            background-color: var(--btn-yellow);
+            color: #222222;
+            border: none;
+            padding: 8px 4px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            width: 100%;
+            transition: background 0.2s;
+        }
+
+        .image-card-wallet-btn:hover {
+            background-color: #e5c123;
+        }
+
+        /* Detalle Entrada QR */
+        .ticket-detail-container { padding: 15px; display: flex; flex-direction: column; align-items: center; width: 100%; }
+        .back-nav { align-self: flex-start; color: var(--eticket-light-blue); font-weight: 700; font-size: 14px; cursor: pointer; margin-bottom: 15px; }
+        .ticket-digital-pass { width: 100%; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.08); }
+        .pass-header { background-color: var(--eticket-blue); color: white; padding: 15px; text-align: center; }
+        .pass-body { padding: 20px; display: flex; flex-direction: column; align-items: center; }
+
+        .qr-secure-area {
+            background: #ffffff;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 220px;
+            position: relative;
+        }
+
+        .qr-wrapper {
+            width: 175px;
+            height: 175px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .blue-laser-scanner {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background-color: var(--eticket-light-blue);
+            box-shadow: 0 0 10px var(--eticket-light-blue), 0 0 4px #ffffff;
+            z-index: 10;
+            animation: scanVertical 2.5s linear infinite alternate;
+        }
+
+        @keyframes scanVertical {
+            0% { top: 0%; }
+            100% { top: 100%; }
+        }
+
+        .time-text {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 12px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .wallet-container {
+            margin: 5px 0 20px 0;
+            text-align: center;
+            width: 100%;
+            z-index: 50;
+        }
+
+        .wallet-btn {
+            display: inline-block;
+            height: 46px;
+            cursor: pointer;
+        }
+
+        .pass-meta-info { width: 100%; border-top: 1px dashed #cbd5e1; padding-top: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: left; }
+        .nfc-banner { background: linear-gradient(90deg, #5a189a 0%, #7b2cbf 100%); color: white; padding: 12px; text-align: center; font-size: 12px; font-weight: bold; margin-top: auto; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <header class="app-header">
+            <div class="logo-mock">e<span>ticket</span></div>
+            <div class="search-box">
+                <input type="text" placeholder="Buscar artistas y/o eventos...">
+                <button>Buscar</button>
+            </div>
+            <button class="user-nav-btn" id="accountBtn" onclick="toggleDropdown()">
+                <span id="user-display-label">Iniciar Sesión</span>
+                <span>▼</span>
+            </button>
+            <div id="eticketDropdown" class="dropdown-menu">
+                <div class="dropdown-item" onclick="changeView('view-tickets-list')">🎟 Mis Eventos</div>
+                <div class="dropdown-item">👤 Mi Información</div>
+                <div class="dropdown-item" onclick="location.reload()">❌ Cerrar Sesión</div>
+            </div>
+        </header>
+
+        <!-- PANTALLA 1: LOGIN -->
+        <div id="view-login" class="view-section active">
+            <img class="login-banner-img" src="logo_eticket.jpeg" alt="eticket Banner">
+            <div class="login-container">
+                <div class="login-title">Acceso a Mi Cuenta eticket</div>
+                <div class="login-subtitle">Introduce tu cuenta para visualizar tus accesos directos.</div>
+                <div class="form-group">
+                    <label>Correo Electrónico</label>
+                    <input type="email" id="input-email" placeholder="ejemplo@correo.com">
+                </div>
+                <div class="form-group">
+                    <label>Contraseña</label>
+                    <input type="password" placeholder="Ingresa tu contraseña">
+                </div>
+                <button class="btn-primary" style="margin-top: 10px;" onclick="processLogin()">Iniciar Sesión</button>
+            </div>
+        </div>
+
+        <!-- PANTALLA 2: MIS EVENTOS (ESTILO REPLICA DE LA IMAGEN Suministrada) -->
+        <div id="view-tickets-list" class="view-section">
+            <div class="sub-header-title">Mis Eventos</div>
+            
+            <div class="purchase-info-container">
+                <div class="main-event-title">OMAKASE - ÁLVARO DÍAZ</div>
+                <div class="main-event-venue">Foro GNP Seguros, Mérida</div>
+                <div class="main-event-date">SÁBADO, 19 DE SEPTIEMBRE DE 2026 21:00 HRS</div>
+
+                <div class="section-header-title">Información de la Compra</div>
+                <div class="meta-data-row"><strong>Fecha de compra:</strong> viernes 12 junio, 2026 11:04</div>
+                <div class="meta-data-row"><strong>Forma de Pago:</strong> 💳 CREDITO - 6581 / CARGO REGULAR</div>
+                <div class="meta-data-row"><strong>Pagado:</strong> $3,998.20</div>
+
+                <div class="section-header-title" style="margin-top: 20px; border-bottom: none; margin-bottom: 0;">Tus Boletos</div>
+                <span style="font-size: 13px; color: #555;">Cuentas con boletos electrónicos para este evento.</span>
+            </div>
+
+            <!-- Bloques de visualización gemelos a la captura -->
+            <div class="image-tickets-grid">
+                <!-- BOLETO 1 -->
+                <div class="image-ticket-card">
+                    <div class="image-card-top">
+                        <div class="image-card-zone">VIVIR ES INCREÍBLE</div>
+                        <div class="image-card-section">ZONA A</div>
+                        <div class="image-card-seat">M-134</div>
+                    </div>
+                    <div class="image-card-body">
+                        <p>Este boleto fue transferido a <strong>Sofía Castro</strong>.</p>
+                    </div>
+                    <!-- El botón amarillo ejecuta la redirección directa a su wallet link -->
+                    <button class="image-card-wallet-btn" onclick="redirectToWallet('1')">
+                        📥 Este boleto se encuentra en tu wallet
+                    </button>
+                </div>
+
+                <!-- BOLETO 2 -->
+                <div class="image-ticket-card">
+                    <div class="image-card-top">
+                        <div class="image-card-zone">VIVIR ES INCREÍBLE</div>
+                        <div class="image-card-section">ZONA A</div>
+                        <div class="image-card-seat">M-135</div>
+                    </div>
+                    <div class="image-card-body">
+                        <p>Este boleto fue transferido a <strong>Sofía Castro</strong>.</p>
+                    </div>
+                    <button class="image-card-wallet-btn" onclick="redirectToWallet('2')">
+                        📥 Este boleto se encuentra en tu wallet
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PANTALLA 3: DETALLE CON QR (Se preserva igual por si se navega internamente) -->
+        <div id="view-ticket-detail" class="view-section">
+            <div class="ticket-detail-container">
+                <div class="back-nav" onclick="changeView('view-tickets-list')">← Volver a mis entradas</div>
+                
+                <div class="ticket-digital-pass">
+                    <div class="pass-header">
+                        <div style="font-size: 11px; letter-spacing: 2px; font-weight: bold; opacity: 0.9;">BOLETO ELECTRÓNICO DIGITAL</div>
+                        <h2 style="font-size: 22px; font-weight: 800; margin-top: 2px;">ÁLVARO DÍAZ</h2>
+                        <div style="font-size: 12px; opacity: 0.8;">OMAKASE TOUR 2026</div>
+                    </div>
+                    
+                    <div class="pass-body">
+                        <div class="qr-secure-area">
+                            <div class="qr-wrapper">
+                                <div class="blue-laser-scanner"></div>
+                                <div id="qrcode"></div>
+                            </div>
+                            <div class="time-text">El código se actualiza automáticamente cada <span style="font-weight: bold; color: var(--eticket-light-blue);">15s</span></div>
+                        </div>
+
+                        <div class="wallet-container">
+                            <a id="wallet-redirect-link" href="#" target="_blank">
+                                <img class="wallet-btn" 
+                                     src="https://developers.google.com/static/wallet/tickets/events/images/es-419_add_to_google_wallet_wallet_button.png" 
+                                     alt="Agregar a Google Wallet">
+                            </a>
+                        </div>
+
+                        <div style="text-align: center; margin-bottom: 12px;">
+                            <span style="background: #e2e8f0; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; color: var(--eticket-blue);" id="pass-seat-id">-</span>
+                        </div>
+
+                        <div class="pass-meta-info">
+                            <div>
+                                <div class="info-tag">Zona</div>
+                                <div class="info-bold" style="color: var(--eticket-light-blue);">VIVIR ES INCREÍBLE</div>
+                            </div>
+                            <div>
+                                <div class="info-tag">Fila / Asiento</div>
+                                <div class="info-bold" id="meta-seat-label">-</div>
+                            </div>
+                            <div>
+                                <div class="info-tag">Remitente</div>
+                                <div class="info-bold">Jade Quiroz</div>
+                            </div>
+                            <div>
+                                <div class="info-tag">ID Entrada</div>
+                                <div class="info-bold" id="meta-token-id" style="font-family: monospace;">-</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="nfc-banner">
+            CONOCE NUESTRO BOLETO NFC ¡AHORA SIN CÓDIGOS QR!
+        </div>
+
+    </div>
+
+    <script>
+        let countdownInterval = null;
+        let detectedUsername = "";
+        let qrInstance = null;
+
+        // Tus dos nuevos enlaces correspondientes asignados a cada boleto
+        const walletLinks = {
+            "1": "https://pay.google.com/gp/v/save/eyJhbGciOiJSUzI1NiIsImtpZCI6IjI2ZDRhOTVhZTk1MDNmZTY0MThmZWJhY2E5OGI2YmQxZTU1NjhmOTMiLCJ0eXAiOiJKV1QifQ.eyJhdWQiOiJnb29nbGUiLCJpYXQiOjE3ODE0ODI4MjAsImlzcyI6IndhbGxldC1wYXNzZXMtc2hhcmluZ0BzeXN0ZW0uZ3NlcnZpY2VhY2NvdW50LmNvbSIsInR5cCI6InNhdmV0b2dvb2dsZXBheSIsInBheWxvYWQiOnsiZXZlbnRUaWNrZXRPYmplY3RzIjpbeyJjbGFzc0lkIjoiMzM1MzEwNjU0ODcwNzczNzQ0MS55MjJiODZkZTU2MjUzZWVlNzc3YWQzMTg3ZGEwN2Y1MTY4YmQ4MDVleW0zMmNlZGdscGNxMDZ1ejE4b3oiLCJpZCI6IjMzNTMxMDY1NDg3MDc3Mzc0NDEuM2EyZmY0YzQyNTA4MjJiZTk5ZWFkMTY3NzQ0ZjM5NWJkNzMzNzdhZWwxcHk5NnU5d3IybXp5d2RmaGozIn1dfX0.QN1QNz1gVwH4iyMsicGALOywRwu2CBlxfrXSlHe3YDT006oTA85NKV3W3SFzMmZ-curt3pUUr_kihui-OaUmmxXp5YgciqNyosN6saZzuZ3J9qCh45E5TCU954HJjPOS-xBPlO5wi9PQInt5NPHPM5U5vwvBv8iiAhRv2ytcJItfWPx_sM2O2lGqpHzP0Y8_dqazwveFEP57Ijz3x57N1Q5m_AjllaJv0Slf4kIqsq770zYvSxzKOZ8SlYzkCy_xrzdha8uVhYTh_69etxn7tdrO5Ava1SiRxP4pI9y6yOGWSIikq59n-j8CKdj-U4sUjlYg6cr9ErCcz89Pd89gCw",
+            "2": "https://pay.google.com/gp/v/save/eyJhbGciOiJSUzI1NiIsImtpZCI6IjI2ZDRhOTVhZTk1MDNmZTY0MThmZWJhY2E5OGI2YmQxZTU1NjhmOTMiLCJ0eXAiOiJKV1QifQ.eyJhdWQiOiJnb29nbGUiLCJpYXQiOjE3ODE0ODI2MTgsImlzcyI6IndhbGxldC1wYXNzZXMtc2hhcmluZ0BzeXN0ZW0uZ3NlcnZpY2VhY2NvdW50LmNvbSIsInR5cCI6InNhdmV0b2dvb2dsZXBheSIsInBheWxvYWQiOnsiZXZlbnRUaWNrZXRPYmplY3RzIjpbeyJjbGFzc0lkIjoiMzM1MzEwNjU0ODcwNzczNzQ0MS55MjJiODZkZTU2MjUzZWVlNzc3YWQzMTg3ZGEwN2Y1MTY4YmQ4MDVlZHZ3MzZ4dGFnYjI5azNhdTF5MXMiLCJpZCI6IjMzNTMxMDY1NDg3MDc3Mzc0NDEuNjZmMGVmZTg1ZTJhYzEzNjAzZGVlYzIwNTU0M2I4NjMyNDI3Y2I4M2R4OWRkeW5iaWNhZTZkZzk5cm5jIn1dfX0.um6VPnhZN0CGxvsDLqkPiAofT3HJan3PVUgeSC_j1Mhdtby_UUhiIxd66NIcKtmshrsAqTbgNMly81mmHDM933BVUURowDE-RAXZzAb6DUQxrtAeRq17V156qVSRjbvRG3oIKpB0i3o8BUn_h0eQBiiW5XTZnI7ar9gwe2arCWRbo8yOnYak7AGpEW5qqhd0vg-5HwhvHpKvNTvDZ9Ozzz249OxFJpDcSngB1BzI0djOg9b7nmFG66SKZcaVK2k2owJzm5ESCwl03pEjvkwuJKHyY1DFvSPD7DRHSKfcuMokrTvijg_NNsEBLRO3epj0sh305cXIn3xgC2bLff4s1w23"
+        };
+
+        function changeView(viewId) {
+            document.querySelectorAll('.view-section').forEach(section => section.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
+            document.getElementById('eticketDropdown').classList.remove('show');
+        }
+
+        function toggleDropdown() {
+            document.getElementById('eticketDropdown').classList.toggle('show');
+        }
+
+        function processLogin() {
+            const emailInput = document.getElementById('input-email').value.trim();
+            if(emailInput !== "") {
+                let extracted = emailInput.split('@')[0];
+                detectedUsername = extracted.charAt(0).toUpperCase() + extracted.slice(1);
+            } else {
+                detectedUsername = "Mi Cuenta";
+            }
+            
+            document.getElementById('user-display-label').innerText = detectedUsername + " 🔒";
+            changeView('view-tickets-list');
+        }
+
+        // Función ejecutada por la barra amarilla para abrir el link correspondiente de Wallet
+        function redirectToWallet(id) {
+            if(walletLinks[id]) {
+                window.open(walletLinks[id], '_blank');
+            }
+        }
+
+        window.onclick = function(e) {
+            if (!e.target.matches('.user-nav-btn') && !e.target.closest('.user-nav-btn')) {
+                document.getElementById('eticketDropdown').classList.remove('show');
+            }
+        }
+    </script>
+</body>
+</html>
